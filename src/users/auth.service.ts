@@ -9,10 +9,14 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { UsersService } from './users.service';
 import * as jwt from 'jsonwebtoken';
 import { readFileSync } from 'fs';
+import { AuthenticatedUser } from './dtos/authenticated-user.dto';
 
 const scrypt = promisify(_scrypt);
 
+// We can also store the public and private key in an env variable.
+// However, for development purposes, I will leave it here at the moment
 const PRIVATE_KEY = readFileSync('./keys/rsa.key');
+const EXPIRES_IN_SECONDS = 10 * 60;
 
 @Injectable()
 export class AuthService {
@@ -40,7 +44,7 @@ export class AuthService {
     return newUser;
   }
 
-  async signin(username: string, password: string) {
+  async signin(username: string, password: string): Promise<AuthenticatedUser> {
     const [user] = await this.userService.find(username);
     if (!user) {
       throw new BadRequestException(
@@ -54,13 +58,17 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const bearerToken = jwt.sign({}, PRIVATE_KEY, {
+    const token = jwt.sign({}, PRIVATE_KEY, {
       algorithm: 'RS256',
-      expiresIn: 10 * 60,
+      expiresIn: EXPIRES_IN_SECONDS,
       subject: user.id.toString(),
     });
 
-    return bearerToken;
+    return {
+      expiresAt: Math.floor(+new Date() / 1000) + EXPIRES_IN_SECONDS,
+      token,
+      username,
+    };
   }
 
   private static async hashPassword(plainTextPassword: string, salt: string) {
