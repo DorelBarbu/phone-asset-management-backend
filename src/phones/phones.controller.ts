@@ -1,7 +1,15 @@
-import { Controller, Get, Request, UseInterceptors } from '@nestjs/common';
-import { CurrentUser } from 'src/users/decorators/current-user.decorator';
+import {
+  Controller,
+  Get,
+  Post,
+  UseInterceptors,
+  Body,
+  Patch,
+  Param,
+} from '@nestjs/common';
 import { CurrentUserInterceptor } from 'src/users/interceptors/current-user.interceptor';
-import { User } from 'src/users/user.entity';
+import { CreatePhoneDto } from './dtos/create-phone.dto';
+import { Phone } from './phone.entity';
 import { PhonesService } from './phones.service';
 
 @Controller('phones')
@@ -9,7 +17,18 @@ import { PhonesService } from './phones.service';
 export class PhonesController {
   constructor(private phonesService: PhonesService) {}
 
-  @Get('') getAllPhones(@CurrentUser() currentUser: User) {
+  @Get('') getAllPhones() {
     return this.phonesService.find();
+  }
+
+  @Post('') createPhone(@Body() phoneDto: CreatePhoneDto) {
+    return this.phonesService.create(phoneDto);
+  }
+
+  @Patch('/:id') updatePhone(
+    @Param('id') id: string,
+    @Body() phoneDto: Partial<Phone>,
+  ) {
+    return this.phonesService.update(parseInt(id), phoneDto);
   }
 }
