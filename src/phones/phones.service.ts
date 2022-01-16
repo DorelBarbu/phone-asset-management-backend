@@ -32,4 +32,8 @@ export class PhonesService {
       ...attrs,
     });
   }
+
+  delete(id: number) {
+    return this.repo.delete(id);
+  }
 }

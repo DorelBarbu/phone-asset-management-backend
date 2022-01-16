@@ -6,6 +6,7 @@ import {
   Body,
   Patch,
   Param,
+  Delete,
 } from '@nestjs/common';
 import { CurrentUserInterceptor } from 'src/users/interceptors/current-user.interceptor';
 import { CreatePhoneDto } from './dtos/create-phone.dto';
@@ -30,5 +31,9 @@ export class PhonesController {
     @Body() phoneDto: Partial<Phone>,
   ) {
     return this.phonesService.update(parseInt(id), phoneDto);
+  }
+
+  @Delete('/:id') deletePhone(@Param('id') id: string) {
+    return this.phonesService.delete(parseInt(id));
   }
 }
